@@ -10,7 +10,6 @@
 #include <kern/console.h>
 #include <kern/monitor.h>
 #include <kern/kdebug.h>
-#include <kern/trap.h>
 
 #define CMDBUF_SIZE	80	// enough for one VGA text line
 
@@ -26,6 +25,8 @@ struct Command {
 static struct Command commands[] = {
 	{ "help", "Display this list of commands", mon_help },
 	{ "kerninfo", "Display information about the kernel", mon_kerninfo },
+	{ "show", "\e[1;34m Pretty ASCII art command \e[1;0m", mon_ascii_art},
+	{"backtrace", "backtrace stuff", mon_backtrace},
 };
 
 /***** Implementations of basic kernel monitor commands *****/
@@ -57,13 +58,48 @@ mon_kerninfo(int argc, char **argv, struct Trapframe *tf)
 }
 
 int
+mon_ascii_art()
+{
+	cprintf("\e[1;35m⢀⡴⠑⡄⠀⠀⠀⠀⠀⠀⠀⣀⣀⣤⣤⣤⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n");
+    cprintf("\e[1;34m⠸⡇⠀⠿⡀⠀⠀⠀⣀⡴⢿⣿⣿⣿⣿⣿⣿⣷⣦⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n");
+    cprintf("\e[1;33m⠀⠀⠀⠀⠑⢄⣠⠾⠁⣀⣄⡈⠙⣿⣿⣿⣿⣿⣿⣿⣿⣆⠀⠀⠀⠀⠀⠀⠀⠀\n");
+    cprintf("\e[1;32m⠀⠀⠀⠀⢀⡀⠁⠀⠀⠈⠙⠛⠂⠈⣿⣿⣿⣿⣿⠿⡿⢿⣆⠀⠀⠀⠀⠀⠀⠀\n");
+    cprintf("\e[1;31m⠀⠀⠀⢀⡾⣁⣀⠀⠴⠂⠙⣗⡀⠀⢻⣿⣿⠭⢤⣴⣦⣤⣹⠀⠀⠀⢀⢴⣶⣆\n");
+    cprintf("\e[1;30m⠀⠀⢀⣾⣿⣿⣿⣷⣮⣽⣾⣿⣥⣴⣿⣿⡿⢂⠔⢚⡿⢿⣿⣦⣴⣾⠁⠸⣼⡿\n");
+    cprintf("\e[1;35m⠀⢀⡞⠁⠙⠻⠿⠟⠉⠀⠛⢹⣿⣿⣿⣿⣿⣌⢤⣼⣿⣾⣿⡟⠉⠀⠀⠀⠀⠀\n");
+    cprintf("\e[1;34m⠀⣾⣷⣶⠇⠀⠀⣤⣄⣀⡀⠈⠻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇⠀⠀⠀⠀⠀⠀\n");
+    cprintf("\e[1;33m⠀⠉⠈⠉⠀⠀⢦⡈⢻⣿⣿⣿⣶⣶⣶⣶⣤⣽⡹⣿⣿⣿⣿⡇⠀⠀⠀⠀⠀⠀\n");
+    cprintf("\e[1;32m⠀⠀⠀⠀⠀⠀⠀⠉⠲⣽⡻⢿⣿⣿⣿⣿⣿⣿⣷⣜⣿⣿⣿⡇⠀⠀⠀⠀⠀⠀\n");
+    cprintf("\e[1;31m⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⣿⣷⣶⣮⣭⣽⣿⣿⣿⣿⣿⣿⣿⠀⠀⠀⠀⠀⠀⠀\n");
+    cprintf("\e[1;30m⠀⠀⠀⠀⠀⠀⣀⣀⣈⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠇⠀⠀⠀⠀⠀⠀⠀\n");
+    cprintf("\e[1;33m⠀⠀⠀⠀⠀⠀⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠃⠀⠀⠀⠀⠀⠀⠀⠀\n");
+    cprintf("\e[1;32m⠀⠀⠀⠀⠀⠀⠀⠹⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠟⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀\n");
+    cprintf("\e[1;31m⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠛⠻⠿⠿⠿⠛⠉\n");
+	cprintf("\e[1;0m");
+	return 0;
+}
+
+int
 mon_backtrace(int argc, char **argv, struct Trapframe *tf)
 {
 	// LAB 1: Your code here.
     // HINT 1: use read_ebp().
-    // HINT 2: print the current ebp on the first line (not current_ebp[0])
+	struct Eipdebuginfo debug_info;
+	memset(&debug_info,0,sizeof(struct Eipdebuginfo));
+
+	uint32_t test = read_ebp();
+	// Test
+	while(test != 0){
+		uint32_t* ebp = (uint32_t*) test;
+		cprintf("ebp %x eip %x args %08x %08x %08x %08x %08x\n" ,test, ebp[1], ebp[2], ebp[3], ebp[4], ebp[5], ebp[6]);
+		int output = debuginfo_eip(ebp[1],&debug_info);
+		cprintf("%s:%x: %.*s+%d\n", debug_info.eip_file, debug_info.eip_line,debug_info.eip_fn_namelen,debug_info.eip_fn_name,ebp[1] - debug_info.eip_fn_addr);
+		test = ebp[0];
+	}
+	// HINT 2: print the current ebp on the first line (not current_ebp[0])
+
 	return 0;
-}
+	}
 
 
 
@@ -119,8 +155,6 @@ monitor(struct Trapframe *tf)
 	cprintf("Welcome to the JOS kernel monitor!\n");
 	cprintf("Type 'help' for a list of commands.\n");
 
-	if (tf != NULL)
-		print_trapframe(tf);
 
 	while (1) {
 		buf = readline("K> ");
