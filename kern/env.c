@@ -123,6 +123,7 @@ env_init(void)
 		envs[i].env_link = env_free_list;
 		env_free_list = &envs[i];
 	}
+	memset(envs, 0, NENV * sizeof(*envs));
 	// Per-CPU part of the initialization
 	env_init_percpu();
 }
@@ -185,14 +186,17 @@ env_setup_vm(struct Env *e)
 	//    - The functions in kern/pmap.h are handy.
 
 	// LAB 3: Your code here.
-	e->env_pgdir = (pde_t*) page2kva(page_alloc(0));
-	if(!(kva2page(e->env_pgdir))) return -E_NO_MEM;
+	e->env_pgdir = (pde_t*) page2kva(p);
 	memset(e->env_pgdir, 0, PGSIZE);
+
+	for(uint32_t i = PDX(UTOP); i < PDX(UPAGES); i++) {
+		if(i != PDX(UVPT)) e->env_pgdir[i] = kern_pgdir[i];
+	};
 
 	// UVPT maps the env's own page table read-only.
 	// Permissions: kernel R, user R
 	e->env_pgdir[PDX(UVPT)] = PADDR(e->env_pgdir) | PTE_P | PTE_U;
-	((struct PageInfo*) kva2page(e->env_pgdir))->pp_ref++;
+	p->pp_ref++;
 
 	return 0;
 }
@@ -277,6 +281,22 @@ region_alloc(struct Env *e, void *va, size_t len)
 	//   'va' and 'len' values that are not page-aligned.
 	//   You should round va down, and round (va + len) up.
 	//   (Watch out for corner-cases!)
+	void *new_va = ROUNDDOWN(va, PGSIZE);
+	void *end = ROUNDUP(va + len, PGSIZE);
+
+	for(uint32_t i = new_va; i < end; i += PGSIZE) {
+		if(page_lookup(e->env_pgdir, i, NULL)) {
+			panic("This memory is already in use!!!!!!!!!!!!!!!!!!!");
+		}
+	}
+
+	for(uint32_t i = new_va; i < end; i += PGSIZE) {
+		struct Page_Info* p = page_alloc(1);
+		if(!p) panic("Failed to allocate memory to new page in region_alloc");
+		if(page_insert(e->env_pgdir, p, i, PTE_P | PTE_W | PTE_U)) panic("Page_Insert failed to allocate the necessary page table :(");
+	}
+	
+	return;
 }
 
 //
@@ -351,6 +371,13 @@ void
 env_create(uint8_t *binary, enum EnvType type)
 {
 	// LAB 3: Your code here.
+	struct Env* elf_enviroment = NULL;
+	int return_code = env_alloc(&elf_enviroment, 0);
+
+	if(return_code == 0){
+    elf_enviroment->env_type = type;
+    load_icode(elf_enviroment, binary);
+	}
 }
 
 //
