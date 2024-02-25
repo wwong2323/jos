@@ -487,14 +487,32 @@ env_run(struct Env *e)
 	// Step 2: Use env_pop_tf() to restore the environment's
 	//	   registers and drop into user mode in the
 	//	   environment.
-
 	// Hint: This function loads the new environment's state from
 	//	e->env_tf.  Go back through the code you wrote above
 	//	and make sure you have set the relevant parts of
 	//	e->env_tf to sensible values.
 
 	// LAB 3: Your code here.
+	if(curenv != e) {
+		switch (curenv->env_status)
+		{
+			case ENV_RUNNING:
+				curenv->env_status = ENV_RUNNABLE;
+			break;
+			case ENV_DYING:
+				env_destroy(curenv);
+			default:
+			break;
+		}
 
-	panic("env_run not yet implemented");
+		curenv = e;
+		e->env_status = ENV_RUNNING;
+		e->env_runs++;
+		
+		lcr3(PADDR(e->env_pgdir));
+	}
+	env_pop_tf(&(e->env_tf));
+
+	return;
 }
 
