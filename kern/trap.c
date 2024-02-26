@@ -62,6 +62,10 @@ static const char *trapname(int trapno)
 // XYZ: write a function declaration here...
 // e.g., void t_divide();
 
+
+
+
+
 void
 trap_init(void)
 {
@@ -76,7 +80,34 @@ trap_init(void)
      * to refer that in C code... (see the comment XYZ above)
      *
      */
-	// LAB 3: Your code here.
+		// LAB 3: Your code here.
+	void t_divide();
+	void t_debug();
+	void t_nmi();
+	void t_brkpt();
+	void t_oflow();
+	void t_bound();
+	void t_illop();
+	void t_device();
+	void t_dblflt();
+	void t_tss();
+	void t_segnp();
+	void t_stack();
+	void t_gpflt();
+	void t_pgflt();
+	void t_fperr();
+	void t_align();
+	void t_mchk();
+	void t_simderr();
+
+	void (*function_array[])() = {t_divide, t_debug, t_nmi, t_brkpt,
+	 t_oflow, t_bound, t_illop, t_device, t_dblflt, 
+	 t_tss, t_segnp, t_stack, t_gpflt, t_pgflt, t_fperr, t_align, t_mchk, t_simderr};
+
+	for(int i = 0; i < 18; ++i){
+		SETGATE(idt[i],0, GD_KT, function_array[i],0);
+	}
+
 
 	// Per-CPU setup
 	trap_init_percpu();
