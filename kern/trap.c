@@ -221,7 +221,7 @@ trap_dispatch(struct Trapframe *tf)
 	}
 	//ex6
 	else if(tf->tf_trapno == T_BRKPT){
-		page_fault_handler(tf);
+		print_trapframe(tf);
 		monitor(tf);
 	}
 	else if(tf->tf_trapno == T_SYSCALL){
