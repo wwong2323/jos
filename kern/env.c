@@ -317,6 +317,58 @@ region_alloc(struct Env *e, void *va, size_t len)
 static void
 load_icode(struct Env *e, uint8_t *binary)
 {
+	// Hints:
+	//  Load each program segment into virtual memory
+	//  at the address specified in the ELF segment header.
+	//  You should only load segments with ph->p_type == ELF_PROG_LOAD.
+	//  Each segment's virtual address can be found in ph->p_va
+	//  and its size in memory can be found in ph->p_memsz.
+	//  The ph->p_filesz bytes from the ELF binary, starting at
+	//  'binary + ph->p_offset', should be copied to virtual address
+	//  ph->p_va.  Any remaining memory bytes should be cleared to zero.
+	//  (The ELF header should have ph->p_filesz <= ph->p_memsz.)
+	//  Use functions from the previous lab to allocate and map pages.
+	//
+	//  All page protection bits should be user read/write for now.
+	//  ELF segments are not necessarily page-aligned, but you can
+	//  assume for this function that no two segments will touch
+	//  the same virtual page.
+	//
+	//  You may find a function like region_alloc useful.
+	//
+	//  Loading the segments is much simpler if you can move data
+	//  directly into the virtual addresses stored in the ELF binary.
+	//  So which page directory should be in force during
+	//  this function?
+	//
+	//  You must also do something with the program's entry point,
+	//  to make sure that the environment starts executing there.
+	//  What?  (See env_run() and env_pop_tf() below.)
+
+	// LAB 3: Your code here.
+	struct Elf* elf = (struct Elf*) binary; 
+	if(elf->e_magic != ELF_MAGIC) panic("ELF invalid, e_magic mismatch");
+	
+	lcr3(PADDR(e->env_pgdir));
+	struct Proghdr* pghdr = (struct Proghdr*) (binary + elf->e_phoff); 
+
+	for(struct Proghdr* i = pghdr; i < (pghdr + elf->e_phnum); i++) {
+		if(i->p_type == ELF_PROG_LOAD) {
+			region_alloc(e, (void*)i->p_va, i->p_memsz);
+			memset((void*) i->p_va, 0, i->p_memsz);
+			memcpy((void*) i->p_va, (void*)(binary + i->p_offset), i->p_filesz);
+		}
+	}
+
+	// Now map one page for the program's initial stack
+	// at virtual address USTACKTOP - PGSIZE.
+
+	// LAB 3: Your code here.
+	region_alloc(e, (void*)USTACKTOP - PGSIZE, PGSIZE);
+	memset((void*)USTACKTOP - PGSIZE, 0, PGSIZE);
+
+	lcr3(PADDR(kern_pgdir));
+	e->env_tf.tf_eip = elf->e_entry;
 }
 
 //

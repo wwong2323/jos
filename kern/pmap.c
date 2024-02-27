@@ -452,7 +452,7 @@ boot_map_region(pde_t *pgdir, uintptr_t va, size_t size, physaddr_t pa, int perm
 int
 page_insert(pde_t *pgdir, struct PageInfo *pp, void *va, int perm)
 {
-	// Fill this function in
+	//Fill this function in
 	pte_t* current_entry = pgdir_walk(pgdir,(const void*)va, 0);
         if((current_entry && (*current_entry & PTE_P))){
             if(page2pa(pp) == PTE_ADDR(*current_entry)){

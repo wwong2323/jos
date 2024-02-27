@@ -46,25 +46,26 @@
 /*
  * Lab 3: Your code here for generating entry points for the different traps.
  */
-	TRAPHANDLER_NOEC(t_divide, T_DIVIDE); // Divide Error 1
-	TRAPHANDLER_NOEC(t_debug, T_DEBUG); // Debug Exception 2
-	TRAPHANDLER_NOEC(t_nmi, T_NMI); // NMI Interrupt 3
-	TRAPHANDLER_NOEC(t_brkpt, T_BRKPT); // Breakpoint 4
-	TRAPHANDLER_NOEC(t_oflow, T_OFLOW); // Overflow 5
-	TRAPHANDLER_NOEC(t_bound, T_BOUND); // Bound Range Exceeded 6
-	TRAPHANDLER_NOEC(t_illop, T_ILLOP); // Invalid Opcode 7
-	TRAPHANDLER_NOEC(t_device, T_DEVICE); //Device not Available 8
-	TRAPHANDLER(t_dblflt, T_DBLFLT); // Double Fault 9
+	TRAPHANDLER_NOEC(t_divide, T_DIVIDE) // Divide Error 1
+	TRAPHANDLER_NOEC(t_debug, T_DEBUG) // Debug Exception 2
+	TRAPHANDLER_NOEC(t_nmi, T_NMI) // NMI Interrupt 3
+	TRAPHANDLER_NOEC(t_brkpt, T_BRKPT) // Breakpoint 4
+	TRAPHANDLER_NOEC(t_oflow, T_OFLOW) // Overflow 5
+	TRAPHANDLER_NOEC(t_bound, T_BOUND) // Bound Range Exceeded 6
+	TRAPHANDLER_NOEC(t_illop, T_ILLOP) // Invalid Opcode 7
+	TRAPHANDLER_NOEC(t_device, T_DEVICE) //Device not Available 8
+	TRAPHANDLER(t_dblflt, T_DBLFLT) // Double Fault 9
 
-	TRAPHANDLER(t_tss, T_TSS); // Invalid TSS 10
-	TRAPHANDLER(t_segnp, T_SEGNP); // Segment not present 11 
-	TRAPHANDLER(t_stack, T_STACK); //Stack Segment Fault 12
-	TRAPHANDLER(t_gpflt, T_GPFLT); // General Protection 13
-	TRAPHANDLER(t_pgflt, T_PGFLT); // Page Fault 14
+	TRAPHANDLER(t_tss, T_TSS) // Invalid TSS 10
+	TRAPHANDLER(t_segnp, T_SEGNP) // Segment not present 11 
+	TRAPHANDLER(t_stack, T_STACK) //Stack Segment Fault 12
+	TRAPHANDLER(t_gpflt, T_GPFLT) // General Protection 13
+	TRAPHANDLER(t_pgflt, T_PGFLT) // Page Fault 14
 	TRAPHANDLER_NOEC(t_fperr, T_FPERR); // Floating Point Error 15
-	TRAPHANDLER(t_align, T_ALIGN); // Alignment check
-	TRAPHANDLER_NOEC(t_mchk, T_MCHK); // machine check
-	TRAPHANDLER_NOEC(t_simderr, T_SIMDERR); //SIMD floating Point
+	TRAPHANDLER(t_align, T_ALIGN) // Alignment check
+	TRAPHANDLER_NOEC(t_mchk, T_MCHK) // machine check
+	TRAPHANDLER_NOEC(t_simderr, T_SIMDERR) //SIMD floating Point
+	TRAPHANDLER_NOEC(t_syscall,T_SYSCALL)
 	
 
 
@@ -82,15 +83,17 @@
  */
 _alltraps:
 // loading GD_KD into ds and es
-pushl %ds;
-pushl %es; 
-pushal;
-push $GD_KD;
-pop %ds;
-pushl $GD_KD;
-popl %es;
-pushl %esp;
-call trap;
+	pushl %ds
+	pushl %es
+	pushal
+	push $GD_KD
+	pop %ds
+	pushl $GD_KD
+	popl %es
+	pushl %esp
+	call trap
+
+
 
 
 
