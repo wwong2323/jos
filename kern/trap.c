@@ -217,7 +217,7 @@ trap_dispatch(struct Trapframe *tf)
 	// LAB 3: Your code here.
 	//ex 5
 	if(tf->tf_trapno == T_PGFLT){
-		if(!(tf->tf_cs & 0b11)) {
+		if((tf->tf_cs == GD_KT)) {
 			print_trapframe(tf);
 			panic("Kernel-Mode Page Fault");
 		}
