@@ -584,7 +584,7 @@ user_mem_check(struct Env *env, const void *va, size_t len, int perm)
 
 	for(uintptr_t i = bot; i < end; i += PGSIZE) {
 		if((*(pgdir_walk(env->env_pgdir, (void*) i, 0)) & perm ) != perm) {
-				user_mem_check_addr = i == bot ? (uintptr_t)va : i;
+				user_mem_check_addr = i == bot ? va : i;
 				return -E_FAULT;
 		}
 	};

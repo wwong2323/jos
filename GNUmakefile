@@ -291,13 +291,13 @@ run-%-nox-gdb: prep-% pre-qemu
 	$(QEMU) -nographic $(QEMUOPTS) -S
 
 run-%-gdb: prep-% pre-qemu
-	$(QEMU) $(QEMUOPTS) -S
+	$(QEMU) -nographic $(QEMUOPTS) -S
 
 run-%-nox: prep-% pre-qemu
 	$(QEMU) -nographic $(QEMUOPTS)
 
 run-%: prep-% pre-qemu
-	$(QEMU) $(QEMUOPTS)
+	$(QEMU) -nographic $(QEMUOPTS)
 
 # This magic automatically generates makefile dependencies
 # for header files included from C source files we compile,
